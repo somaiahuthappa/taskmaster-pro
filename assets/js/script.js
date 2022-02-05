@@ -44,53 +44,6 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
-// to edit a task
-$(".list-group").on("click", "p", function() {
-  // get current text
-  var text = $(this).text().trim();
-// create textarea element
-  var textInput = $("<textarea>").addClass("form-control").val(text);
-// swap out elements
-  $(this).replaceWith(textInput);
-// automatically focus on new element
-  textInput.trigger("focus");
-})
-
-$(".list-group").on("blur", "textarea", function(){
-  //get the textarea'current value/text
-  var text = $(this).val().trim();
-
-  // get the parent ul's id attribute
-  var status = $(this).closest(".list-group").attr("id").replace("list-", "");
-
-  // get the task's position in the list of other li elements/the index
-  var index= $(this).closest(".list-group-item").index();
-
-  tasks[status][index].text = text;
-  saveTasks();
-
-  //recreate p element
-  var tasksP = $("<p>").addClass("m-1").text(text);
-
-  // replace textarea with p element
-  $(this).replaceWith(tasksP);
-})
-
-// due date was clicked
-$(".list-group").on("click", "span", function() {
-  // get current text
-  var date = $(this).text().trim();
-
-  // create new input elememnt
-  var dateInput = $("<input>").attr("type", "text").addClass("form-control").val(date);
-
-  // swap out elements
-  $(this).replaceWith(dateInput);
-
-  // automatically focus on new element
-  dateInput.trigger("focus");
-})
-
 // value of due date was changed
 $(".list-group").on("blur", "input[type='text']", function (){
   // get current text
@@ -159,5 +112,109 @@ $("#remove-tasks").on("click", function() {
 
 // load tasks for the first time
 loadTasks();
+
+// enable draggable/sortable feature on list-group elements
+$(".card .list-group").sortable({
+  // enable dragging across lists
+  connectWith: $(".card .list-group"),
+  scroll: false,
+  tolerance: "pointer",
+  helper: "clone",
+  activate: function(event) {
+    console.log("activate", this);
+  },
+  deactivate: function(event) {
+    console.log("deactivate", this);
+  },
+  over: function(event) {
+    console.log("over", event.target);
+  },
+  out: function(event) {
+    console.log("out", event.target);
+  },
+  update: function(event) {    
+    var tempArr = [];
+    
+    // loop over current set of children in sortable list
+    $(this).children().each(function() {
+      // save values in temp array
+      tempArr.push({
+        text: $(this).find("p").text().trim(),
+        date: $(this).find("span").text().trim(),
+      });
+
+    });
+    
+      // trim down list's ID to match object property
+      var arrName = $(this).attr("id").replace("list-", "");
+
+      // update array on tasks objecct and save
+      tasks[arrName] = tempArr;
+      saveTasks();
+  }
+});
+
+// to edit a task
+$(".list-group").on("click", "p", function() {
+  // get current text
+  var text = $(this).text().trim();
+// create textarea element
+  var textInput = $("<textarea>").addClass("form-control").val(text);
+// swap out elements
+  $(this).replaceWith(textInput);
+// automatically focus on new element
+  textInput.trigger("focus");
+})
+
+$(".list-group").on("blur", "textarea", function(){
+  //get the textarea'current value/text
+  var text = $(this).val().trim();
+
+  // get the parent ul's id attribute
+  var status = $(this).closest(".list-group").attr("id").replace("list-", "");
+
+  // get the task's position in the list of other li elements/the index
+  var index= $(this).closest(".list-group-item").index();
+
+  tasks[status][index].text = text;
+  saveTasks();
+
+  //recreate p element
+  var tasksP = $("<p>").addClass("m-1").text(text);
+
+  // replace textarea with p element
+  $(this).replaceWith(tasksP);
+})
+
+// due date was clicked
+$(".list-group").on("click", "span", function() {
+  // get current text
+  var date = $(this).text().trim();
+
+  // create new input elememnt
+  var dateInput = $("<input>").attr("type", "text").addClass("form-control").val(date);
+
+  // swap out elements
+  $(this).replaceWith(dateInput);
+
+  // automatically focus on new element
+  dateInput.trigger("focus");
+})
+
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+    console.log("drop");
+     },
+     over:function(event, ui) {
+       console.log("over");
+     },
+     out: function (event, ui) {
+       console.log("out");
+     },
+})
+
 
 
